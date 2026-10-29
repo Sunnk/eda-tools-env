@@ -17,8 +17,8 @@ Paste `setup_eda.sh` into the cloud environment's **Setup script** (environment 
 session title bar, then Edit). Each new session then:
 
 1. installs the runtime packages with apt;
-2. downloads the prebuilt package from the `eda-v1` release, checks its SHA256 and extracts it
-   to `/opt` (about 1 ~ 2 minutes);
+2. downloads the prebuilt package parts from `prebuilt/`, joins them, checks the SHA256 and
+   extracts the package to `/opt` (about 1 ~ 2 minutes);
 3. writes `/etc/profile.d/eda.sh` (PATH and `UVM_HOME`).
 
 With `EDA_TARBALL_URL` empty the script builds every tool from source instead
@@ -26,7 +26,9 @@ With `EDA_TARBALL_URL` empty the script builds every tool from source instead
 
 ## Prebuilt package
 
-`eda-tools-ubuntu24.04-x86_64.tar.xz` (release `eda-v1`), extract with `tar -xJf ... -C /opt`.
+`prebuilt/eda-tools-ubuntu24.04-x86_64.tar.xz.part00` / `.part01` (split at 40 MB to stay under
+GitHub's 50 MB file warning). Join with `cat prebuilt/*.part* > eda.tar.xz`, extract with
+`tar -xJf eda.tar.xz -C /opt`.
 SHA256 `4bb32b7fcb5da3b30a38c3389c85bf51c1c13a1e6719ff2f4a7da1a2198e1dd0`.
 Build options: Verilator `./configure --prefix=/opt/verilator-5.052`; slang and Yosys CMake
 Release builds (`SLANG_INCLUDE_TESTS=OFF`, `YOSYS_ENABLE_UNIT_TESTS=OFF`) with GCC 13.3.

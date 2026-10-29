@@ -5,13 +5,15 @@
 # Install paths match the dev scripts (dev/vl_build.sh, dev/slang_lint.sh, syn/syn_eval.sh).
 #
 # Two ways to install:
-#   1. Prebuilt package (about 1 ~ 2 minutes): set EDA_TARBALL_URL below to where
-#      eda-tools-ubuntu24.04-x86_64.tar.xz is hosted (for example a GitHub release asset).
+#   1. Prebuilt package (about 1 ~ 2 minutes): eda-tools-ubuntu24.04-x86_64.tar.xz, stored in
+#      prebuilt/ of this repository as parts below 50 MB; EDA_TARBALL_URL is the URL of the
+#      package without the .partNN suffix, the parts are downloaded in order and joined.
 #   2. Build from source (about 60 ~ 90 minutes on 4 cores): leave EDA_TARBALL_URL empty.
 # The setup script cannot read the environment's variables or secrets, so the URL is written here.
 set -euo pipefail
 
-EDA_TARBALL_URL="https://github.com/Sunnk/eda-tools-env/releases/download/eda-v1/eda-tools-ubuntu24.04-x86_64.tar.xz"
+EDA_TARBALL_URL="https://raw.githubusercontent.com/Sunnk/eda-tools-env/main/prebuilt/eda-tools-ubuntu24.04-x86_64.tar.xz"
+EDA_TARBALL_PARTS="00 01"
 EDA_TARBALL_SHA256="4bb32b7fcb5da3b30a38c3389c85bf51c1c13a1e6719ff2f4a7da1a2198e1dd0"
 
 VERILATOR_TAG=v5.052
@@ -31,7 +33,9 @@ apt-get install -y -qq make g++ perl python3 zlib1g libtcl8.6 libreadline8t64 li
 install_prebuilt() {
     local tmp
     tmp=$(mktemp -d)
-    curl -fsSL -o "$tmp/eda.tar.xz" "$EDA_TARBALL_URL"
+    for part in $EDA_TARBALL_PARTS; do
+        curl -fsSL --retry 3 "$EDA_TARBALL_URL.part$part" >> "$tmp/eda.tar.xz"
+    done
     echo "$EDA_TARBALL_SHA256  $tmp/eda.tar.xz" | sha256sum -c -
     tar -xJf "$tmp/eda.tar.xz" -C /opt
     rm -rf "$tmp"
